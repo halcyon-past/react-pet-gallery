@@ -185,37 +185,64 @@ const Gallery: React.FC = () => {
     setSorting(e.target.value as 'A-Z' | 'Z-A');
   };
 
+
   const handleDownloadSelected = async () => {
-    const zip = new JSZip();
     const downloadHistory = JSON.parse(localStorage.getItem("downloadHistory") || "[]");
-  
-    // Iterate over selected pets and add each image to the zip
-    for (const url of selectedPets) {
+
+    // Check if only one image is selected
+    if (selectedPets.length === 1) {
+      const url = selectedPets[0];
       try {
         const response = await fetch(url);
         const blob = await response.blob();
-  
+
         // Find pet details and create a filename
         const pet = pets.find((pet) => pet.url === url);
         const petName = pet ? pet.title.replace(/\s+/g, '_') : 'pet_image';
-  
-        // Add the image to the zip file
-        zip.file(`${petName}.jpeg`, blob);
-  
+
+        // Trigger download of the single image
+        saveAs(blob, `${petName}.jpeg`);
+
         // Update local storage with download details
         downloadHistory.push({ title: pet?.title, url: pet?.url, downloadedAt: new Date().toISOString() });
       } catch (error) {
         console.error('Failed to fetch image:', error);
       }
+    } else if (selectedPets.length > 1) {
+      const zip = new JSZip();
+
+      // Iterate over selected pets and add each image to the zip
+      for (const url of selectedPets) {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+
+          // Find pet details and create a filename
+          const pet = pets.find((pet) => pet.url === url);
+          const petName = pet ? pet.title.replace(/\s+/g, '_') : 'pet_image';
+
+          // Add the image to the zip file
+          zip.file(`${petName}.jpeg`, blob);
+
+          // Update local storage with download details
+          downloadHistory.push({ title: pet?.title, url: pet?.url, downloadedAt: new Date().toISOString() });
+        } catch (error) {
+          console.error('Failed to fetch image:', error);
+        }
+      }
+
+      // Save download history to local storage
+      localStorage.setItem("downloadHistory", JSON.stringify(downloadHistory));
+
+      // Generate the zip file and trigger download
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, 'pets_images.zip');
     }
-  
-    // Save download history to local storage
+    
+    // Save download history to local storage after updating
     localStorage.setItem("downloadHistory", JSON.stringify(downloadHistory));
-  
-    // Generate the zip file and trigger download
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    saveAs(zipBlob, 'pets_images.zip');
   };
+
   
 
   const filteredPets = pets
