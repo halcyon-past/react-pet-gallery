@@ -3,6 +3,8 @@ import { Download } from 'lucide-react';
 import useFetchPets from '../hooks/useFetchPets';
 import PetCard from '../components/PetCard';
 import LoadingCard from '../components/LoadingCard';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { usePetContext } from '../context/PetContext';
 import styled from 'styled-components';
 
@@ -184,30 +186,37 @@ const Gallery: React.FC = () => {
   };
 
   const handleDownloadSelected = async () => {
+    const zip = new JSZip();
+    const downloadHistory = JSON.parse(localStorage.getItem("downloadHistory") || "[]");
+  
+    // Iterate over selected pets and add each image to the zip
     for (const url of selectedPets) {
       try {
-        // Fetch the image as a blob
         const response = await fetch(url);
         const blob = await response.blob();
   
-        // Find the pet's title based on the URL
+        // Find pet details and create a filename
         const pet = pets.find((pet) => pet.url === url);
         const petName = pet ? pet.title.replace(/\s+/g, '_') : 'pet_image';
   
-        // Create a URL for the blob and download it with the pet's name
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `${petName}.jpeg`;
-        link.click();
+        // Add the image to the zip file
+        zip.file(`${petName}.jpeg`, blob);
   
-        // Clean up the object URL after the download is triggered
-        URL.revokeObjectURL(blobUrl);
+        // Update local storage with download details
+        downloadHistory.push({ title: pet?.title, url: pet?.url, downloadedAt: new Date().toISOString() });
       } catch (error) {
-        console.error('Failed to download image:', error);
+        console.error('Failed to fetch image:', error);
       }
     }
+  
+    // Save download history to local storage
+    localStorage.setItem("downloadHistory", JSON.stringify(downloadHistory));
+  
+    // Generate the zip file and trigger download
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, 'pets_images.zip');
   };
+  
 
   const filteredPets = pets
     .filter(pet =>
