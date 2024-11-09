@@ -139,7 +139,7 @@ const MobileMenu = styled.div<{ $isOpen: boolean }>`
   opacity: ${props => props.$isOpen ? '1' : '0'};
   visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255);
+  background: rgba(255, 255, 255,0.9);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(229, 231, 235, 0.8);
   padding: 0.5rem 0;
@@ -149,7 +149,7 @@ const MobileMenu = styled.div<{ $isOpen: boolean }>`
   }
 
   @media (prefers-color-scheme: dark) {
-    background: rgba(40,46,60);
+    background: rgba(40,46,60,0.9);
     border-bottom: 1px solid rgba(55, 65, 81, 0.8);
   }
 `;
