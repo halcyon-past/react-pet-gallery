@@ -120,10 +120,6 @@ const FloatingDownloadButton = styled(Button)`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   background-color: #3b82f6;
   color: white;
-
-  @media (min-width: 768px) {
-    display: none; // Hide on larger screens
-  }
 `;
 
 const DownloadIcon = styled.div`
